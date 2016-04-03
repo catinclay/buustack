@@ -1,4 +1,8 @@
 var theCanvas = document.getElementById("mainCanvas");
+if(screen.width < 400){
+	theCanvas.width *=2;
+	theCanvas.height *=2;
+}
 var theCanvasHeight = theCanvas.height; 
 var theCanvasWidth = theCanvas.width;
 var gameOverLabel = document.getElementById("gameOverLabel");
@@ -6,6 +10,7 @@ var restartButton = document.getElementById("restartButton");
 var scoreLabel = document.getElementById("scoreLabel");
 var context = theCanvas.getContext("2d");
 var memorySaver = 10;
+var orginalSpeed =  2.5*theCanvasWidth;
 var failedSound = new Audio('sounds/faildSound.mp3');
 var comboSounds = [new Audio('sounds/combo1.mp3'),
 					new Audio('sounds/combo2.mp3'),
@@ -41,7 +46,7 @@ function init(){
 	currentWidth = theCanvasWidth;
 	leftEdge = 0;
 	rightEdge = theCanvasWidth;
-	speed = 2*theCanvasWidth;
+	speed = orginalSpeed;
 	speedUpRatio = theCanvasWidth/20;
 	fromLeft = true;
 	perfectCriteria = theCanvasWidth/20;
@@ -75,8 +80,16 @@ function moveStack() {
 function drawScreen() {
 	context.fillStyle = "#FFFFFF";
 	context.fillRect(0,0,theCanvasWidth,theCanvasHeight);
+	writeScore();
 	drawStacks();
 	drawVanishSquares();
+}
+
+function writeScore(){
+	context.font = "60px Comic Sans MS";
+	context.fillStyle = "black";
+	context.textAlign = "center";
+	context.fillText(index-1,theCanvasWidth/2,theCanvasHeight/6.5);
 }
 
 function drawVanishSquares(){
@@ -111,20 +124,24 @@ function touchDownListener(evt){
 
 function inputDownLinstener(touchX, touchY){
 	speed+=speedUpRatio;
+	// if(speed > theCanvasWidth*5.5){
+	// 	speed = 2.5*theCanvasWidth;
+	// 	speedUpRatio*1.3;
+	// }
 	var currentStack = stacks[stacks.length-1];
 	if(currentStack.x + currentWidth/2< leftEdge || currentStack.x - currentWidth/2 > rightEdge){
 		gameOver();
 	}
 
 	if(Math.abs(currentStack.x - currentWidth/2 - leftEdge) < perfectCriteria
-		// && ((fromLeft && currentStack.x - currentWidth/2 < leftEdge) || 
-		// 	(!fromLeft &&currentStack.x - currentWidth/2 > leftEdge))
+		&& ((fromLeft && currentStack.x - currentWidth/2 < leftEdge+perfectCriteria/4) || 
+			(!fromLeft &&currentStack.x - currentWidth/2 > leftEdge-perfectCriteria/4))
 		){
 		currentStack.x = (rightEdge+leftEdge)/2;
 		currentStack.color = "#0000FF"; 
-		++combo;
 		var comboIndex = combo>7?7:combo;
 		comboSounds[comboIndex].play();
+		++combo;
 		if(combo > 5){
 			var TargetLeft = Math.max(leftEdge-theCanvas.width/25,0);
 			var TargetRight = Math.min(rightEdge+theCanvas.width/25,theCanvas.width);
@@ -160,6 +177,10 @@ function inputDownLinstener(touchX, touchY){
 	currentStack.velX = 0;
 	fromLeft = !fromLeft;
 	var yPos = currentStack.y - currentStack.height;
+	if((index-1)%50==0){
+		speed = orginalSpeed;
+		speedUpRatio *= 1.1;
+	}
 	stacks.push(new SimpleSquareParticle(fromLeft, index++, currentWidth, speed, theCanvas, yPos));
 	stacks[stacks.length-1].yDistance += currentStack.yDistance;
 	cameraUp();
