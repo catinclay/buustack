@@ -10,7 +10,7 @@ var restartButton = document.getElementById("restartButton");
 var scoreLabel = document.getElementById("scoreLabel");
 var context = theCanvas.getContext("2d");
 var memorySaver = 10;
-var orginalSpeed =  2.5*theCanvasWidth;
+var orginalSpeed =  3*theCanvasWidth;
 var failedSound = new Audio('sounds/faildSound.mp3');
 var comboSounds = [new Audio('sounds/combo1.mp3'),
 					new Audio('sounds/combo2.mp3'),
@@ -123,11 +123,6 @@ function touchDownListener(evt){
 }
 
 function inputDownLinstener(touchX, touchY){
-	speed+=speedUpRatio;
-	// if(speed > theCanvasWidth*5.5){
-	// 	speed = 2.5*theCanvasWidth;
-	// 	speedUpRatio*1.3;
-	// }
 	var currentStack = stacks[stacks.length-1];
 	if(currentStack.x + currentWidth/2< leftEdge || currentStack.x - currentWidth/2 > rightEdge){
 		gameOver();
@@ -137,6 +132,7 @@ function inputDownLinstener(touchX, touchY){
 		&& ((fromLeft && currentStack.x - currentWidth/2 < leftEdge+perfectCriteria/4) || 
 			(!fromLeft &&currentStack.x - currentWidth/2 > leftEdge-perfectCriteria/4))
 		){
+		speed+=speedUpRatio;
 		currentStack.x = (rightEdge+leftEdge)/2;
 		currentStack.color = "#0000FF"; 
 		var comboIndex = combo>7?7:combo;
@@ -151,6 +147,7 @@ function inputDownLinstener(touchX, touchY){
 			currentWidth = TargetRight-TargetLeft;
 		}
 	}else{
+		speed-=speedUpRatio/4;
 		combo = 0;
 		var vanishSquare;
 		var xPos;
@@ -177,9 +174,9 @@ function inputDownLinstener(touchX, touchY){
 	currentStack.velX = 0;
 	fromLeft = !fromLeft;
 	var yPos = currentStack.y - currentStack.height;
-	if((index-1)%50==0){
-		speed = orginalSpeed;
-		speedUpRatio *= 1.1;
+	if(index!=1 && (index-1)%10==0){
+		// speed = orginalSpeed;
+		speedUpRatio *= 0.9;
 	}
 	stacks.push(new SimpleSquareParticle(fromLeft, index++, currentWidth, speed, theCanvas, yPos));
 	stacks[stacks.length-1].yDistance += currentStack.yDistance;
