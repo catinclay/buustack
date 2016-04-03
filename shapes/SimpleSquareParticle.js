@@ -11,7 +11,7 @@ function SimpleSquareParticle(fromLeft, index, width, speed, theCanvas, yPos) {
 		this.x = theCanvas.width + this.width/2;
 		this.velX = -speed/100;
 	}
-	
+
 	this.offset = index>5? 5:index;
 	if(index <= 5){
 		this.y = theCanvas.height - this.height/2 -(this.offset * this.height);
@@ -21,7 +21,13 @@ function SimpleSquareParticle(fromLeft, index, width, speed, theCanvas, yPos) {
 	this.yDistance = 0;
 	this.velY = 0;
 	this.color = "#333333";
-	
+	this.targetLeft = this.x - this.width/2;
+	this.targetRight = this.x + this.width/2;
+}
+
+SimpleSquareParticle.prototype.inflate = function(left, right){
+	this.targetLeft = left;
+	this.targetRight = right;
 }
 
 SimpleSquareParticle.prototype.move = function() {
@@ -32,6 +38,11 @@ SimpleSquareParticle.prototype.move = function() {
 		this.y += this.yDistance;
 		this.yDistance = 0;
 		this.velY = 0;
+	}
+	var targetWid = this.targetRight-this.targetLeft;
+	this.width = this.width+0.3*(targetWid-this.width);
+	if(targetWid-this.width <10){
+		this.width = targetWid;
 	}
 }
 

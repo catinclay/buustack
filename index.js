@@ -7,7 +7,18 @@ var scoreLabel = document.getElementById("scoreLabel");
 var context = theCanvas.getContext("2d");
 var memorySaver = 10;
 var failedSound = new Audio('sounds/faildSound.mp3');
-
+var comboSounds = [new Audio('sounds/combo1.mp3'),
+					new Audio('sounds/combo2.mp3'),
+					new Audio('sounds/combo3.mp3'),
+					new Audio('sounds/combo4.mp3'),
+					new Audio('sounds/combo5.mp3'),
+					new Audio('sounds/combo6.mp3'),
+					new Audio('sounds/combo7.mp3'),
+					new Audio('sounds/combo8.mp3')];
+failedSound.volume = .2;
+for(se in comboSounds){
+	se.volume = 1;
+}
 
 var stacks;
 var currentWidth;
@@ -30,10 +41,10 @@ function init(){
 	currentWidth = theCanvasWidth;
 	leftEdge = 0;
 	rightEdge = theCanvasWidth;
-	speed = 800;
-	speedUpRatio = 35;
+	speed = 2*theCanvasWidth;
+	speedUpRatio = theCanvasWidth/20;
 	fromLeft = true;
-	perfectCriteria = 20;
+	perfectCriteria = theCanvasWidth/20;
 	addListeners();
 	index = 0;
 	stacks = [];
@@ -106,11 +117,22 @@ function inputDownLinstener(touchX, touchY){
 	}
 
 	if(Math.abs(currentStack.x - currentWidth/2 - leftEdge) < perfectCriteria
-		&& ((fromLeft && currentStack.x - currentWidth/2 < leftEdge) || 
-			(!fromLeft &&currentStack.x - currentWidth/2 > leftEdge))){
+		// && ((fromLeft && currentStack.x - currentWidth/2 < leftEdge) || 
+		// 	(!fromLeft &&currentStack.x - currentWidth/2 > leftEdge))
+		){
 		currentStack.x = (rightEdge+leftEdge)/2;
 		currentStack.color = "#0000FF"; 
 		++combo;
+		var comboIndex = combo>7?7:combo;
+		comboSounds[comboIndex].play();
+		if(combo > 5){
+			var TargetLeft = Math.max(leftEdge-theCanvas.width/25,0);
+			var TargetRight = Math.min(rightEdge+theCanvas.width/25,theCanvas.width);
+			leftEdge = TargetLeft;
+			rightEdge = TargetRight;
+			currentStack.inflate(TargetLeft, TargetRight);
+			currentWidth = TargetRight-TargetLeft;
+		}
 	}else{
 		combo = 0;
 		var vanishSquare;
@@ -132,6 +154,7 @@ function inputDownLinstener(touchX, touchY){
 		currentWidth = rightEdge -leftEdge;
 		currentStack.x = (rightEdge+leftEdge)/2;
 		currentStack.width = currentWidth;
+		currentStack.inflate(leftEdge,rightEdge);
 		failedSound.play();
 	}
 	currentStack.velX = 0;
